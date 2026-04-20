@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 import "./Settings.css";
 
 interface SettingsProps {
@@ -6,10 +7,10 @@ interface SettingsProps {
 }
 
 export const Settings: React.FC<SettingsProps> = ({ contractId }) => {
+  const { isDark, toggleTheme } = useTheme();
   const [settings, setSettings] = useState({
     autoSaveAuditLog: true,
     notifyOnDistribution: true,
-    darkMode: false,
     displayCurrency: "XLM",
     maxPayoutsPerTransaction: 10,
     minPayoutAmount: 0.1,
@@ -29,6 +30,11 @@ export const Settings: React.FC<SettingsProps> = ({ contractId }) => {
     setSettings({ ...settings, [key]: value });
   };
 
+  const handleDarkMode = () => {
+    toggleTheme();
+    showSaveStatus("✓ Theme updated!");
+  };
+
   const handleSave = () => {
     // Save to localStorage for persistence
     localStorage.setItem("royaltySplitterSettings", JSON.stringify(settings));
@@ -40,7 +46,6 @@ export const Settings: React.FC<SettingsProps> = ({ contractId }) => {
       const defaults = {
         autoSaveAuditLog: true,
         notifyOnDistribution: true,
-        darkMode: false,
         displayCurrency: "XLM",
         maxPayoutsPerTransaction: 10,
         minPayoutAmount: 0.1,
@@ -101,11 +106,11 @@ export const Settings: React.FC<SettingsProps> = ({ contractId }) => {
               </p>
             </div>
             <button
-              className={`toggle-btn ${settings.darkMode ? "active" : ""}`}
-              onClick={() => handleToggle("darkMode")}
+              className={`toggle-btn ${isDark ? "active" : ""}`}
+              onClick={handleDarkMode}
               id="darkMode"
             >
-              {settings.darkMode ? "ON" : "OFF"}
+              {isDark ? "ON" : "OFF"}
             </button>
           </div>
         </section>
