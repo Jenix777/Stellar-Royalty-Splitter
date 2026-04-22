@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
 import { Navigation } from "./components/Navigation";
+
+// Freighter is injected at runtime by the browser extension
+declare global {
+  interface Window {
+    freighter?: {
+      requestAccess: () => Promise<{ address: string }>;
+      getAddress: () => Promise<{ address: string }>;
+    };
+  }
+}
 import { Dashboard } from "./components/Dashboard";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { Settings } from "./components/Settings";
@@ -15,21 +25,32 @@ import "./App.css";
 
 export default function App() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [contractId, setContractId] = useState("");
+  const [contractId, setContractId] = useState(
+    () => localStorage.getItem("lastContractId") ?? ""
+  );
   const [royaltyRate, setRoyaltyRate] = useState(500); // Default 5%
   const [currentPage, setCurrentPage] = useState("dashboard");
 
-  // Load royalty stats when contract changes to get current rate
+  // Silently reconnect Freighter if it was previously authorized
   useEffect(() => {
-    if (!contractId) {
-      setRoyaltyRate(500); // Reset to default if no contract
-      return;
+    async function tryReconnect() {
+      // window.freighter is injected at runtime by the browser extension
+      if (!window.freighter) return;
+      try {
+        const { address } = await window.freighter.getAddress();
+        if (address) setWalletAddress(address);
+      } catch {
+        // Not yet authorized — user must connect manually
+      }
     }
+    tryReconnect();
+  }, []);
 
-    // For now, keep using the local state. In a future enhancement,
-    // add an API endpoint to fetch the current royalty rate from the contract.
-    // The rate will update when SecondaryRoyaltyConfig successfully sets it.
-  }, [contractId]);
+  function handleContractChange(value: string) {
+    setContractId(value);
+    if (value) localStorage.setItem("lastContractId", value);
+    else localStorage.removeItem("lastContractId");
+  }
 
   const renderPage = () => {
     switch (currentPage) {
@@ -116,7 +137,7 @@ export default function App() {
               className="contract-input"
               placeholder="C..."
               value={contractId}
-              onChange={(e) => setContractId(e.target.value)}
+              onChange={(e) => handleContractChange(e.target.value)}
             />
           </div>
 
