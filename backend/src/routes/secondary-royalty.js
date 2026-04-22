@@ -16,6 +16,7 @@ import {
   updateTransactionHash,
   addAuditLog,
 } from "../database.js";
+import { validate, recordSecondarySaleSchema, setRoyaltyRateSchema } from "../validation.js";
 
 export const secondaryRoyaltyRouter = Router();
 
@@ -24,7 +25,7 @@ export const secondaryRoyaltyRouter = Router();
  * Body: { contractId, walletAddress, nftId, previousOwner, newOwner, salePrice, saleToken, royaltyRate }
  * Returns: { xdr, transactionId, royaltyAmount } — transaction to record royalty + calculated royalty
  */
-secondaryRoyaltyRouter.post("/", async (req, res, next) => {
+secondaryRoyaltyRouter.post("/", validate(recordSecondarySaleSchema), async (req, res, next) => {
   try {
     const {
       contractId,
@@ -127,7 +128,7 @@ secondaryRoyaltyRouter.post("/", async (req, res, next) => {
  * Body: { contractId, walletAddress, royaltyRate }
  * Returns: { xdr, transactionId } — unsigned transaction to set royalty rate
  */
-secondaryRoyaltyRouter.post("/set-rate", async (req, res, next) => {
+secondaryRoyaltyRouter.post("/set-rate", validate(setRoyaltyRateSchema), async (req, res, next) => {
   try {
     const { contractId, walletAddress, royaltyRate } = req.body;
 
