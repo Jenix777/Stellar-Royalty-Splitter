@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../api";
-import { signAndSubmitTransaction } from "../stellar.js";
+import { signAndSubmitTransaction } from "../stellar";
+
 
 interface Props {
   contractId: string;
@@ -49,11 +50,18 @@ export default function SecondaryRoyaltyConfig({
 
       // Sign and submit transaction (this would require Freighter integration)
       const result = await signAndSubmitTransaction(xdr);
+      
+      setStatus({ type: "info", msg: "Waiting for confirmation..." });
+      await api.confirmTransaction(result, {
+        status: "confirmed",
+        blockTime: new Date().toISOString(),
+      });
 
       setStatus({
         type: "ok",
         msg: `Royalty rate set to ${(rate / 100).toFixed(2)}%! TX: ${result}`,
       });
+
 
       onSuccess();
       // Update parent component with new rate

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "../api";
-import { signAndSubmitTransaction } from "../stellar.js";
+import { signAndSubmitTransaction } from "../stellar";
+
 
 interface Props {
   contractId: string;
@@ -79,10 +80,17 @@ export default function RecordSecondarySale({
       // Sign and submit transaction
       const result = await signAndSubmitTransaction(xdr);
 
+      setStatus({ type: "info", msg: "Waiting for confirmation..." });
+      await api.confirmTransaction(result, {
+        status: "confirmed",
+        blockTime: new Date().toISOString(),
+      });
+
       setStatus({
         type: "ok",
         msg: `Secondary sale recorded! Royalty: ${royaltyAmount} tokens. TX: ${result}`,
       });
+
 
       setFormData({
         nftId: "",
