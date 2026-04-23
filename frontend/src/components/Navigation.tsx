@@ -13,6 +13,14 @@ export const Navigation: React.FC<NavigationProps> = ({
   walletAddress,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  function copyAddress() {
+    if (!walletAddress) return;
+    navigator.clipboard.writeText(walletAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -55,6 +63,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               <button
                 className={`nav-link ${currentPage === item.id ? "active" : ""}`}
                 onClick={() => handleNavClick(item.id)}
+                aria-current={currentPage === item.id ? "page" : undefined}
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
@@ -65,9 +74,19 @@ export const Navigation: React.FC<NavigationProps> = ({
 
         <div className="nav-wallet">
           {walletAddress && (
-            <span className="wallet-info">
-              {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-            </span>
+            <>
+              <span className="wallet-info" title={walletAddress}>
+                {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+              </span>
+              <button
+                className="copy-address-btn"
+                onClick={copyAddress}
+                title="Copy full address"
+                aria-label="Copy wallet address"
+              >
+                {copied ? "✓" : "⧉"}
+              </button>
+            </>
           )}
         </div>
       </div>
