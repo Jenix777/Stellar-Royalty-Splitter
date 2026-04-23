@@ -11,7 +11,7 @@ import { collaboratorsRouter } from "./routes/collaborators.js";
 import { secondaryRoyaltyRouter } from "./routes/secondary-royalty.js";
 import historyRouter from "./routes/history.js";
 import { analyticsRouter } from "./routes/analytics.js";
-import { initializeDatabase } from "./database.js";
+import { initializeDatabase, getMigrationVersion } from "./database.js";
 
 // Initialize database on startup
 initializeDatabase();
@@ -64,7 +64,9 @@ app.use("/api", historyRouter);
 app.use("/api", analyticsRouter);
 
 // Health check
-app.get("/api/health", (_req, res) => res.json({ ok: true }));
+app.get("/api/health", (_req, res) =>
+  res.json({ ok: true, dbVersion: getMigrationVersion() }),
+);
 
 // Central error handler
 app.use((err, _req, res, _next) => {

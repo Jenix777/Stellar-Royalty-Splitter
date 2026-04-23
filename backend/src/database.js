@@ -7,9 +7,43 @@ const dbPath = path.join(__dirname, "..", "audit.db");
 
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
+db.pragma("synchronous = NORMAL"); // safe with WAL, much faster
+db.pragma("cache_size = -64000"); // 64MB page cache
+db.pragma("foreign_keys = ON"); // enforce FK constraints
+db.pragma("temp_store = MEMORY"); // temp tables in memory
 
 // Initialize database schema
 export function initializeDatabase() {
+  // Migration version tracking
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version INTEGER PRIMARY KEY,
+      applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  const migrations = [
+    {
+      version: 1,
+      sql: `/* initial schema — already applied via CREATE TABLE IF NOT EXISTS */`,
+    },
+  ];
+
+  const applied = db
+    .prepare("SELECT version FROM schema_migrations")
+    .all()
+    .map((r) => r.version);
+
+  for (const migration of migrations) {
+    if (!applied.includes(migration.version)) {
+      db.exec(migration.sql);
+      db.prepare("INSERT INTO schema_migrations (version) VALUES (?)").run(
+        migration.version,
+      );
+      console.log(`Applied migration v${migration.version}`);
+    }
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS transactions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
