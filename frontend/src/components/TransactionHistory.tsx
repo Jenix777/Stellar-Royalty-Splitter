@@ -30,9 +30,19 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
     }
   };
 
+  // Reset offset whenever the contract changes so we show the first page
+  useEffect(() => {
+    setOffset(0);
+  }, [contractId]);
+
   useEffect(() => {
     fetchHistory();
   }, [contractId, offset]);
+
+  // Reset pagination offset when the contract changes
+  useEffect(() => {
+    setOffset(0);
+  }, [contractId]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
