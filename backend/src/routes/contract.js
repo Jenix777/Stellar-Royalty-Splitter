@@ -35,6 +35,10 @@ contractRouter.get("/version/:contractId", async (req, res, next) => {
 
     const sim = await server.simulateTransaction(tx);
     if (SorobanRpc.Api.isSimulationError(sim)) {
+      const errorMsg = sim.error?.toString() || '';
+      if (errorMsg.includes('not initialized')) {
+        return res.status(404).json({ error: 'Contract not initialized' });
+      }
       return res.status(400).json({ error: sim.error });
     }
 

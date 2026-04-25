@@ -152,6 +152,12 @@ impl RoyaltySplitter {
 
     /// Distribute the accumulated secondary royalty pool to all collaborators.
     pub fn distribute_secondary_royalties(env: Env) {
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .expect("contract not initialized");
+        admin.require_auth();
 
         let pool: i128 = env
             .storage()
@@ -204,7 +210,9 @@ impl RoyaltySplitter {
         env.storage().instance().set(&DataKey::SecondaryPool, &0_i128);
     }
 
-    pub fn record_secondary_royalty(env: Env, sale_price: i128) -> i128 {
+    /// Record a secondary sale and calculate royalty amount based on sale price.
+    /// Returns the calculated royalty amount.
+    pub fn record_secondary_sale(env: Env, sale_price: i128) -> i128 {
         if sale_price <= 0 {
             panic!("sale price must be positive");
         }

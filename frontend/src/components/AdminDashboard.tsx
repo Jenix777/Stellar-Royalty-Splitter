@@ -44,9 +44,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       const response = await api.getContractVersion(contractId);
       setContractVersion(response.version);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error loading contract version:", err);
-      setContractVersion("unknown");
+      // Check if it's a "not initialized" error from backend
+      if (err.message?.includes('404') || err.message?.includes('not initialized')) {
+        setContractVersion("not initialized");
+      } else {
+        setContractVersion("unknown");
+      }
     }
   };
 
