@@ -270,7 +270,11 @@ export function getAuditLog(contractId, limit = 100, offset = 0) {
     LIMIT ? OFFSET ?
   `);
 
-  return stmt.all(contractId, limit, offset);
+  return stmt.all(contractId, limit, offset).map((row) => {
+    let details = null;
+    try { details = JSON.parse(row.details || "{}"); } catch (_) {}
+    return { ...row, details };
+  });
 }
 
 export function addAuditLog(contractId, action, user, details) {
@@ -487,6 +491,7 @@ export function getAnalyticsData(contractId, startDate, endDate) {
       FROM transactions t
       LEFT JOIN distribution_payouts dp ON dp.transactionId = t.id
       WHERE t.contractId = ? AND t.status = 'confirmed'
+        AND t.type != 'initialize'
         AND t.timestamp BETWEEN ? AND ?`
     )
     .get(contractId, startDate, endDate);

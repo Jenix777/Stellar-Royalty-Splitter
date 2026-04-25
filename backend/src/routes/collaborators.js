@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  Address,
   Contract,
   SorobanRpc,
   TransactionBuilder,
@@ -45,6 +46,9 @@ collaboratorsRouter.get("/:contractId", async (req, res, next) => {
     if (!resultVal) return res.json([]);
 
     const addresses =
+      resultVal.vec()?.map((scv) => {
+        return Address.fromScVal(scv).toString();
+      }) ?? [];
       resultVal.vec()?.map((scv) => Address.fromScVal(scv).toString()) ?? [];
 
     // Fetch share for each address

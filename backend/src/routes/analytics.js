@@ -56,6 +56,7 @@ router.get("/analytics/:contractId", (req, res) => {
         FROM transactions t
         LEFT JOIN distribution_payouts dp ON dp.transactionId = t.id
         WHERE t.contractId = ? AND t.status = 'confirmed'
+          AND t.type != 'initialize'
           AND t.timestamp BETWEEN ? AND ?`
       )
       .get(contractId, startDate.toISOString(), endDate.toISOString());
