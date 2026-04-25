@@ -1,5 +1,5 @@
 import express from "express";
-import db from "../database.js";
+import db from "../database.js"; // default export — no getDatabase() call needed
 
 // Simple in-memory cache with TTL
 const cache = new Map();
